@@ -3,3 +3,6 @@ dataset/
 
 # virtual env
 .venv/
+
+# env variables
+.env
