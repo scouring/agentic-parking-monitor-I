@@ -57,39 +57,39 @@ Streamlit Dashboard
 
 ## ⚙️ Features
 
-🔍**Computer Vision**
-    * YOLO-based vehicle detection
-    * Handles dense scenes and small objects
-📊 **Real-Time Dashboard**
-    * Live feed simulation from image stock
-    * Occupancy metrics (total, occupied, available)
-    * Occupancy rate visualization
-📈 **Time-Series Tracking**
-    * Persistent logging of occupancy data
-    * Trend visualization over time
-🔮 **Forecasting**
-    * Linear regression-based next-hour occupancy prediction
-    * Enables proactive decision-making
-🤖 **Agent-Based Decision System**
-    * Structured decisions:
-        - Pricing adjustments
-        - Traffic redirection
-        - Alerts
-    * LLM-generated explanations for business users
-🚨 **Alerts**
-    * High occupancy warnings
-    * Forecast-based demand alerts
+- 🔍 **Computer Vision**
+  - YOLO-based vehicle detection
+  - Handles dense scenes and small objects
+
+- 📊 **Real-Time Dashboard**
+  - Live feed simulation from image stock
+  - Occupancy metrics (total, occupied, available)
+  - Occupancy rate visualization
+
+- 📈 **Time-Series Tracking**
+  - Persistent logging of occupancy data
+  - Trend visualization over time
+
+- 🔮 **Forecasting**
+  - Linear regression-based next-hour occupancy prediction
+  - Enables proactive decision-making
+
+- 🤖 **Agent-Based Decision System**
+  - Structured decisions:
+    - Pricing adjustments
+    - Traffic redirection
+    - Alerts
+  - LLM-generated explanations for business users
+
+- 🚨 **Alerts**
+  - High occupancy warnings
+  - Forecast-based demand alerts
 
 ---
 
-## 📸 Screenshots
-    **Dashboard**
-    **Live Feed Simulation**
-    ![App Demo](static/video/Recording%202026-03-20%20150310.gif)
-    **Forecasting**
-    <p align="center">
+## 📸 **Video Demo**
+    
    <img src="static/video/Recording%202026-03-20%20150310.gif" width="700" />
-   </p>
 
 ---
 
@@ -144,6 +144,7 @@ Select the button "Start Live Feed Simulation"
 ---
 
 ## Project Structure
+```text
 agentic-parking-monitor/
 ├── app/
 ├── vision_service/
@@ -152,6 +153,7 @@ agentic-parking-monitor/
 ├── dataset/
 ├── requirements.txt
 └── README.md
+```
 
 ---
 
