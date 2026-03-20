@@ -1,24 +1,22 @@
-def decide_parking_action(stats):
+def make_conclusion(stats, forecast=None):
+    rate = stats["occupied"] / stats["total"]
 
-    total = stats["total"]
-    occupied = stats["occupied"]
-
-    if total == 0:
-        return "No parking spaces detected"
-    
-    rate = occupied / total
+    conclusion = {
+        "occupancy_rate": rate,
+        "pricing": "maintain",
+        "traffic": "normal",
+        "alert": None
+    }
 
     if rate > 0.9:
-        action = "Parking lot FULL alert"
+        conclusion["pricing"] = "increase_15%"
+        conclusion["traffic"] = "redirect"
+        conclusion["alert"] = "Lot nearly full"
 
-    elif rate > 0.75:
-        action = "Parking lot nearly full"
+    elif rate < 0.5:
+        conclusion["pricing"] = "decrease_10%"
 
-    elif rate > 0.4:
-        action = "Parking lot moderately occupied"
+    if forecast and forecast > stats["total"] * 0.95:
+        conclusion["alert"] = "High demand expected next hour"
 
-    else:
-        action = "Parking mostly available"
-
-    return action
-    
+    return conclusion

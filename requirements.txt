@@ -8,3 +8,4 @@ openai
 streamlit
 python-dotenv
 pandas
+scikit-learn
