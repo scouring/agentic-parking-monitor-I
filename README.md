@@ -88,8 +88,9 @@ Streamlit Dashboard
 ---
 
 ### 📸 **Video Demo**
-    
-   <img src="static/video/Recording%202026-03-20%20150310.gif" width="500" />
+<p align="center">
+    <img src="static/video/Recording%202026-03-20%20150310.gif" width="500" />
+</p>
 
 ---
 
