@@ -4,7 +4,7 @@ An end-to-end AI-powered system that transforms parking lot images into real-tim
 
 ---
 
-## 📌 Overview
+### 📌 Overview
 
 This project simulates a production-grade intelligent parking management system. It combines:
 
@@ -17,7 +17,7 @@ The system converts raw visual data into actionable insights such as pricing adj
 
 ---
 
-## 🎯 Business Value (ROI)
+### 🎯 Business Value (ROI)
 
 This system is designed to deliver measurable impact:
 
@@ -28,7 +28,7 @@ This system is designed to deliver measurable impact:
 
 ---
 
-## 🏗️ Architecture
+### 🏗️ Architecture
 
 ```text
 Image Feed (Simulated)
@@ -48,14 +48,14 @@ Streamlit Dashboard
 
 ---
 
-## 📋 Prerequisites
+### 📋 Prerequisites
 - **WSL: Ubuntu**
 - **Python 3.10**
 - **OpenAI API key** # put in .env file
 
 ---
 
-## ⚙️ Features
+### ⚙️ Features
 
 - 🔍 **Computer Vision**
   - YOLO-based vehicle detection
@@ -87,13 +87,13 @@ Streamlit Dashboard
 
 ---
 
-## 📸 **Video Demo**
+### 📸 **Video Demo**
     
-   <img src="static/video/Recording%202026-03-20%20150310.gif" width="700" />
+   <img src="static/video/Recording%202026-03-20%20150310.gif" width="500" />
 
 ---
 
-## 📊 Model Training Summary
+### 📊 Model Training Summary
     * Model: YOLOv8 (Ultralytics)
     * Dataset: PKLot
     * Task: Vehicle detection
@@ -105,12 +105,12 @@ Streamlit Dashboard
 
 ---
 
-## Installation
+### Installation
 
 ### 1. Clone the repository
 
 ```bash
-git clone https://github.com/scouring/agentic-parking-monitor-I.git
+git clone -b version-2 https://github.com/scouring/agentic-parking-monitor-I.git
 cd agentic-parking-monitor-I
 ```
 
@@ -143,7 +143,7 @@ Select the button "Start Live Feed Simulation"
 
 ---
 
-## Project Structure
+### Project Structure
 ```text
 agentic-parking-monitor/
 ├── app/
@@ -157,13 +157,13 @@ agentic-parking-monitor/
 
 ---
 
-## License
+### License
 
 This project is licensed under the [MIT License](LICENSE)
 
 ---
 
-## Future Work
+### Future Work
 - Real-time camera integration
 - Multi-lot optimization
 - Advanced forecasting (ARIMA, LSTM)
