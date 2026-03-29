@@ -1,9 +1,10 @@
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse, JSONResponse
+from fastapi.responses import StreamingResponse
 from pathlib import Path
 from datetime import datetime
 import os
+import time
 import pandas as pd
 
 from vision_service.detect import detect_parking
@@ -11,76 +12,96 @@ from vision_service.occupancy_counter import count_occupancy
 from agent_service.agent import run_agent
 from models.linear_regression import forecast_next_hour
 
-app = FastAPI(title="Smart Parking Monitor API")
+app = FastAPI(title="Smart Parking Monitor")
 
-# --- FRAME SETUP ---
 FRAME_DIR = Path("dataset/valid/images")
-frames = sorted([str(FRAME_DIR / f) for f in os.listdir(FRAME_DIR)
-                 if f.lower().endswith((".png", ".jpg", ".jpeg"))])
+
+frames = sorted([
+    str(FRAME_DIR / f)
+    for f in os.listdir(FRAME_DIR)
+    if f.lower().endswith((".jpg", ".jpeg", ".png"))
+])
 
 frame_index = 0
 data_log = []
 
-# --- PROCESS ONE FRAME ---
 def process_frame(frame_path):
+
     detections = detect_parking(frame_path)
     stats = count_occupancy(detections)
-    occupancy_rate = stats["occupied"] / stats["total"] if stats["total"] else 0
+
+    forecast = None
+    if len(data_log) >= 3:
+        forecast = forecast_next_hour()[0]
+
+    agent_decision = run_agent(stats, forecast)
 
     row = {
         "timestamp": datetime.now(),
         "occupied": stats["occupied"],
         "available": stats["available"],
-        "rate": occupancy_rate
+        "forecast": forecast,
+        "agent": str(agent_decision)
     }
+
     data_log.append(row)
-    df = pd.DataFrame(data_log)
 
-    forecast_value = None
-    if len(df) >= 3:
-        forecast_value = forecast_next_hour()[0]
 
-    agent_decision = run_agent(stats, forecast_value)
+def frame_generator():
 
-    return {
-        "frame": frame_path,
-        "stats": stats,
-        "occupancy_rate": occupancy_rate,
-        "forecast": forecast_value,
-        "agent": agent_decision
-    }
-
-# --- LIVE IMAGE ---
-@app.get("/frame_image")
-def frame_image():
     global frame_index
-    frame_path = frames[frame_index]
-    # Increment for next request
-    frame_index = (frame_index + 1) % len(frames)
-    # Process stats in background
-    process_frame(frame_path)
-    return FileResponse(frame_path)
 
-# --- METRICS ---
+    while True:
+
+        frame_path = frames[frame_index]
+
+        frame_index = (frame_index + 1) % len(frames)
+
+        process_frame(frame_path)
+
+        with open(frame_path, "rb") as f:
+            frame_bytes = f.read()
+
+        yield (
+            b"--frame\r\n"
+            b"Content-Type: image/jpeg\r\n\r\n" +
+            frame_bytes +
+            b"\r\n"
+        )
+
+        time.sleep(1)
+
+
+@app.get("/video")
+def video_feed():
+
+    return StreamingResponse(
+        frame_generator(),
+        media_type="multipart/x-mixed-replace; boundary=frame"
+    )
+
+
 @app.get("/metrics")
-def get_metrics():
+def metrics():
+
     if not data_log:
-        return {"total": 0, "occupied": 0, "empty": 0}
+        return {
+            "total":0,
+            "occupied":0,
+            "empty":0,
+            "forecast":"N/A",
+            "agent":"N/A"
+        }
+
     latest = data_log[-1]
+
     return {
         "total": latest["occupied"] + latest["available"],
         "occupied": latest["occupied"],
-        "empty": latest["available"]
+        "empty": latest["available"],
+        "forecast": latest["forecast"] if latest["forecast"] else "N/A",
+        "agent": latest["agent"]
     }
 
-# --- TREND / HISTORY ---
-@app.get("/trend")
-def get_trend():
-    if not data_log:
-        return []
-    df = pd.DataFrame(data_log)
-    df["timestamp"] = df["timestamp"].astype(str)
-    return df.to_dict(orient="records")
 
-# --- STATIC FRONTEND ---
 app.mount("/", StaticFiles(directory="frontend", html=True), name="frontend")
