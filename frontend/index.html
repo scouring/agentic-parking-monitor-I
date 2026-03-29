@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Smart Parking Assistant</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    h1 { color: #2a9d8f; }
+    .metrics { margin-top: 20px; }
+  </style>
+</head>
+<body>
+  <h1>🚗 Smart Parking Assistant 🚘</h1>
+
+  <img id="frame" width="640" alt="Live Parking Frame"/>
+
+  <div class="metrics">
+    <h2>Parking Metrics</h2>
+    <div>
+      Total: <span id="total">0</span><br>
+      Occupied: <span id="occupied">0</span><br>
+      Empty: <span id="empty">0</span>
+    </div>
+
+    <h2>Forecast / Agent</h2>
+    <div>
+      Next Hour Forecast: <span id="forecast">N/A</span><br>
+      Agent Decision: <span id="agent">N/A</span>
+    </div>
+  </div>
+
+  <script>
+    const frameImg = document.getElementById("frame");
+    const totalEl = document.getElementById("total");
+    const occupiedEl = document.getElementById("occupied");
+    const emptyEl = document.getElementById("empty");
+    const forecastEl = document.getElementById("forecast");
+    const agentEl = document.getElementById("agent");
+
+    async function updateDashboard() {
+      // 1️⃣ Update live frame
+      frameImg.src = `/frame_image?t=${Date.now()}`;
+
+      // 2️⃣ Fetch latest metrics
+      try {
+        const res = await fetch("/metrics");
+        if (!res.ok) throw new Error("Failed to fetch metrics");
+        const data = await res.json();
+
+        totalEl.textContent = data.total;
+        occupiedEl.textContent = data.occupied;
+        emptyEl.textContent = data.empty;
+
+      } catch (err) {
+        console.error("Metrics error:", err);
+      }
+
+      // 3️⃣ Fetch latest frame info for forecast/agent
+      try {
+        const res2 = await fetch("/trend");
+        if (!res2.ok) throw new Error("Failed to fetch trend");
+        const trend = await res2.json();
+        if (trend.length > 0) {
+          const latest = trend[trend.length - 1];
+          forecastEl.textContent = latest.forecast ?? "N/A";
+          agentEl.textContent = latest.agent ?? "N/A";
+        }
+      } catch (err) {
+        console.error("Trend error:", err);
+      }
+    }
+
+    // Update every 1s
+    setInterval(updateDashboard, 1000);
+    updateDashboard(); // initial load
+  </script>
+</body>
+</html>

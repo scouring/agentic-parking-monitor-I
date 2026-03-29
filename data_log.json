@@ -380,3 +380,8 @@
 {"timestamp": "2026-03-20T15:15:56.996248", "occupied": 52, "available": 48, "rate": 0.52}
 {"timestamp": "2026-03-20T15:16:07.899488", "occupied": 50, "available": 50, "rate": 0.5}
 {"timestamp": "2026-03-20T15:16:14.727361", "occupied": 48, "available": 53, "rate": 0.4752475247524752}
+{"timestamp": "2026-03-27T14:59:28.870837", "occupied": 69, "available": 31, "rate": 0.69}
+{"timestamp": "2026-03-27T14:59:36.461572", "occupied": 70, "available": 30, "rate": 0.7}
+{"timestamp": "2026-03-27T14:59:43.472094", "occupied": 75, "available": 25, "rate": 0.75}
+{"timestamp": "2026-03-27T14:59:52.743363", "occupied": 76, "available": 24, "rate": 0.76}
+{"timestamp": "2026-03-27T15:00:00.149347", "occupied": 75, "available": 25, "rate": 0.75}
