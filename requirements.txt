@@ -1,11 +1,7 @@
+ultralytics
+opencv-python
+pandas
 fastapi
 uvicorn
-opencv-python
-numpy
-ultralytics
-python-multipart
-openai
-streamlit
 python-dotenv
-pandas
-scikit-learn
+openai

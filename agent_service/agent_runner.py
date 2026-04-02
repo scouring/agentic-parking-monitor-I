@@ -1,7 +1,7 @@
 from dotenv import load_dotenv
 import os
 from openai import OpenAI
-import json
+
 from agent_service.tools import (
     calculate_occupancy_rate,
     pricing_recommendation,
@@ -15,33 +15,38 @@ client = OpenAI(api_key=api_key)
 
 def run_agent(stats, forecast=None): 
     rate = calculate_occupancy_rate(stats)
-    pricing = pricing_recommendation(rate)
+
+    forecast_rate = None
+    if forecast:
+        forecast_rate = forecast / stats["total"]
+    pricing = pricing_recommendation(rate, forecast_rate)
     traffic = traffic_recommendation(rate)
     conclusion = make_conclusion(stats, forecast)
 
     structured_decision = {
         "occupancy_rate": rate,
+        "forecast_occupancy": forecast,
         "pricing_action": pricing,
         "traffic_action": traffic
     }
 
     prompt = f"""
-    You are an operations AI for parking management.
+    You are an AI parking operations assistant.
 
-    Data:
+    Parking data:
     {structured_decision}
 
-    Explain the reasoning behind these decisions in a concise, business-friendly way.
-    Explain this parking decision clearly for a manager:
+    Explain the operational reasoning behind these decisions
+    in simple language for a parking manager.
 
+    Decision:
     {conclusion}
     """
 
     response = client.chat.completions.create(
         model="gpt-4o-mini",
         messages=[
-            {"role": "system", "content": "You are a business operations assistant."},
-            {"role": "system", "content": "You are an operations assistant."},
+            {"role": "system", "content": "You manage parking operations."},
             {"role": "user", "content": prompt}
         ]
     )

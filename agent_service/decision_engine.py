@@ -1,6 +1,11 @@
 def make_conclusion(stats, forecast=None):
     rate = stats["occupied"] / stats["total"]
 
+    forecast_rate = None
+
+    if forecast:
+        forecast_rate = forecast / stats["total"]
+
     conclusion = {
         "occupancy_rate": rate,
         "pricing": "maintain",
@@ -16,7 +21,8 @@ def make_conclusion(stats, forecast=None):
     elif rate < 0.5:
         conclusion["pricing"] = "decrease_10%"
 
-    if forecast and forecast > stats["total"] * 0.95:
+    if forecast_rate and forecast_rate > 0.95:
         conclusion["alert"] = "High demand expected next hour"
+        conclusion["pricing"] = "increase_15%"
 
     return conclusion

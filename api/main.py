@@ -1,107 +1,69 @@
 from fastapi import FastAPI
-from fastapi.staticfiles import StaticFiles
 from fastapi.responses import StreamingResponse
-from pathlib import Path
-from datetime import datetime
-import os
+import cv2
 import time
-import pandas as pd
 
-from vision_service.detect import detect_parking
-from vision_service.occupancy_counter import count_occupancy
-from agent_service.agent import run_agent
-from models.linear_regression import forecast_next_hour
+from services.frame_service import get_next_frame
+from services.yolo_service import run_inference
+from services.logging_service import log_stats
+from services.forecast_service import forecast_next_hour
+
+from agent_service.agent_runner import run_agent
 
 app = FastAPI(title="Smart Parking Monitor")
 
-FRAME_DIR = Path("dataset/valid/images")
+latest_stats = {}
 
-frames = sorted([
-    str(FRAME_DIR / f)
-    for f in os.listdir(FRAME_DIR)
-    if f.lower().endswith((".jpg", ".jpeg", ".png"))
-])
+def generate_frames():
 
-frame_index = 0
-data_log = []
-
-def process_frame(frame_path):
-
-    detections = detect_parking(frame_path)
-    stats = count_occupancy(detections)
-
-    forecast = None
-    if len(data_log) >= 3:
-        forecast = forecast_next_hour()[0]
-
-    agent_decision = run_agent(stats, forecast)
-
-    row = {
-        "timestamp": datetime.now(),
-        "occupied": stats["occupied"],
-        "available": stats["available"],
-        "forecast": forecast,
-        "agent": str(agent_decision)
-    }
-
-    data_log.append(row)
-
-
-def frame_generator():
-
-    global frame_index
+    global latest_stats
 
     while True:
 
-        frame_path = frames[frame_index]
+        frame_path = get_next_frame()
 
-        frame_index = (frame_index + 1) % len(frames)
+        result = run_inference(frame_path)
 
-        process_frame(frame_path)
+        latest_stats = {
+            "total": result["total"],
+            "occupied": result["occupied"],
+            "empty": result["empty"]
+        }
 
-        with open(frame_path, "rb") as f:
-            frame_bytes = f.read()
+        log_stats(latest_stats)
+
+        frame = result["image"]
+
+        _, buffer = cv2.imencode(".jpg", frame)
 
         yield (
-            b"--frame\r\n"
-            b"Content-Type: image/jpeg\r\n\r\n" +
-            frame_bytes +
-            b"\r\n"
+            b'--frame\r\n'
+            b'Content-Type: image/jpeg\r\n\r\n'
+            + buffer.tobytes() +
+            b'\r\n'
         )
 
-        time.sleep(1)
-
+        time.sleep(5)
 
 @app.get("/video")
 def video_feed():
 
     return StreamingResponse(
-        frame_generator(),
+        generate_frames(),
         media_type="multipart/x-mixed-replace; boundary=frame"
     )
-
 
 @app.get("/metrics")
 def metrics():
 
-    if not data_log:
-        return {
-            "total":0,
-            "occupied":0,
-            "empty":0,
-            "forecast":"N/A",
-            "agent":"N/A"
-        }
+    forecast = forecast_next_hour()
 
-    latest = data_log[-1]
+    agent = run_agent(latest_stats, forecast)
 
     return {
-        "total": latest["occupied"] + latest["available"],
-        "occupied": latest["occupied"],
-        "empty": latest["available"],
-        "forecast": latest["forecast"] if latest["forecast"] else "N/A",
-        "agent": latest["agent"]
+        "total": latest_stats["total"],
+        "occupied": latest_stats["occupied"],
+        "empty": latest_stats["empty"],
+        "forecast": forecast,
+        "agent": agent["message"]
     }
-
-
-app.mount("/", StaticFiles(directory="frontend", html=True), name="frontend")
