@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from fastapi.responses import StreamingResponse
+from fastapi.staticfiles import StaticFiles
 import cv2
 import time
 
@@ -45,6 +46,10 @@ def generate_frames():
 
         time.sleep(5)
 
+# @app.get("/")
+# def read_root():
+#     return {"message": "Welcome to Agentic Parking Monitor"}
+
 @app.get("/video")
 def video_feed():
 
@@ -67,3 +72,6 @@ def metrics():
         "forecast": forecast,
         "agent": agent["message"]
     }
+
+# Serve your existing frontend at root
+app.mount("/", StaticFiles(directory="frontend", html=True), name="frontend")
