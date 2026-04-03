@@ -43,6 +43,7 @@ def run_agent(stats, forecast=None):
     {conclusion}
     """
 
+
     response = client.chat.completions.create(
         model="gpt-4o-mini",
         messages=[

@@ -24,10 +24,27 @@ Total: <span id="total"></span><br>
 Occupied: <span id="occupied"></span><br>
 Empty: <span id="empty"></span><br>
 
-<h2>Forecast / Agent</h2>
+<h3>Status: <span id="status"></span></h3>
+
+<h3>Lot Utilization</h3>
+
+<div style="width:400px;background:#eee;border-radius:10px">
+  <div id="bar" style="height:25px;width:0%;background:#2a9d8f;border-radius:10px"></div>
+</div>
+
+<h2>Forecast</h2>
 
 Next Hour Forecast: <span id="forecast"></span><br>
-Agent Decision: <span id="agent"></span>
+
+<h2>Agent</h2>
+
+<!-- Agent Decision: <span id="agent"></span> -->
+ <div id="agent" style="
+    background:#f4f4f4;
+    padding:15px;
+    border-radius:8px;
+    white-space:pre-line;
+"></div>
 
 <script>
 
@@ -35,15 +52,41 @@ async function updateMetrics(){
 
     const res = await fetch("/metrics")
     const data = await res.json()
+    const occupancyRate = data.occupied / data.total
 
     document.getElementById("total").textContent = data.total
     document.getElementById("occupied").textContent = data.occupied
     document.getElementById("empty").textContent = data.empty
     document.getElementById("forecast").textContent = data.forecast
     document.getElementById("agent").textContent = data.agent
+    
+
+    let status = ""
+    let color = ""
+
+    if (occupancyRate < 0.5){
+        status = "Plenty of Parking"
+        color = "green"
+    }
+    else if (occupancyRate < 0.8){
+        status = "Filling Up"
+        color = "orange"
+    }
+    else{
+        status = "Nearly Full"
+        color = "red"
+    }
+
+    const statusEl = document.getElementById("status")
+    statusEl.textContent = status
+    statusEl.style.color = color
+
+    const percent = Math.round((data.occupied / data.total) * 100)
+
+    document.getElementById("bar").style.width = percent + "%"
 }
 
-setInterval(updateMetrics,1000)
+setInterval(updateMetrics,10000)
 
 updateMetrics()
 

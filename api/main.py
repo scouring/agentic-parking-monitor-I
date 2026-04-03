@@ -33,10 +33,13 @@ def generate_frames():
 
         log_stats(latest_stats)
 
+        # image frame with bounding box
         frame = result["image"]
 
+        # converts the image into JPEG bytes so browsers can display it.
         _, buffer = cv2.imencode(".jpg", frame)
 
+        # Streams the fram with an MJPEG stream. Browser can render this as live video.
         yield (
             b'--frame\r\n'
             b'Content-Type: image/jpeg\r\n\r\n'
@@ -44,12 +47,10 @@ def generate_frames():
             b'\r\n'
         )
 
-        time.sleep(5)
+        # controls the frame rate
+        time.sleep(10)
 
-# @app.get("/")
-# def read_root():
-#     return {"message": "Welcome to Agentic Parking Monitor"}
-
+# video endpoint. returns the live stream at http://localhost:8000/video
 @app.get("/video")
 def video_feed():
 
@@ -58,6 +59,7 @@ def video_feed():
         media_type="multipart/x-mixed-replace; boundary=frame"
     )
 
+# metrics endpoint. returns JSON data about parking status.
 @app.get("/metrics")
 def metrics():
 
