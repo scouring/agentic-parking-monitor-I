@@ -1,96 +1,115 @@
 <!DOCTYPE html>
 <html>
-
 <head>
-
-<title>Smart Parking Assistant</title>
-
-<style>
-body{font-family:Arial;margin:30px}
-h1{color:#2a9d8f}
-</style>
-
+    <title>Smart Parking Assistant</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 30px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        h1 { color: #2a9d8f; text-align: center; }
+        #agent {
+            background: #f4f4f4;
+            padding: 15px;
+            border-radius: 8px;
+            white-space: pre-line;
+            overflow-x: auto;
+            max-height: 300px;
+        }
+        #video-container { display: flex; justify-content: center; margin: 20px 0; }
+        #video-container img { max-width: 100%; height: auto; border: 2px solid #2a9d8f; border-radius: 8px; }
+        .metrics { width: 400px; text-align: left; margin-bottom: 20px; }
+        .bar-container { width: 100%; background: #eee; border-radius: 10px; }
+        .bar { height: 25px; width: 0%; background: #2a9d8f; border-radius: 10px; }
+        #updated { color: #555; }
+    </style>
 </head>
-
 <body>
+    <h1>🚗 Smart Parking Assistant 🚘</h1>
 
-<h1>🚗 Smart Parking Assistant 🚘</h1>
+    <!-- Video -->
+    <div id="video-container">
+        <img src="/video">
+    </div>
 
-<img src="/video" width="640">
+    <!-- Metrics -->
+    <div class="metrics">
+        <h2>Parking Metrics</h2>
+        Total: <span id="total"></span><br>
+        Occupied: <span id="occupied"></span><br>
+        Empty: <span id="empty"></span><br>
 
-<h2>Parking Metrics</h2>
+        <h3>Status: <span id="status"></span></h3>
 
-Total: <span id="total"></span><br>
-Occupied: <span id="occupied"></span><br>
-Empty: <span id="empty"></span><br>
+        <h3>Lot Utilization</h3>
+        <div class="bar-container">
+            <div id="bar" class="bar"></div>
+        </div>
+    </div>
 
-<h3>Status: <span id="status"></span></h3>
+    <!-- Forecast / Agent -->
+    <div class="metrics">
+        <h2>Forecast / Agent</h2>
+        Next Hour Forecast: <span id="forecast"></span><br>
+        <h3>Agent Decision:</h3>
+        <div id="agent"></div>
+    </div>
 
-<h3>Lot Utilization</h3>
+    <!-- Countdown -->
+    <div style="margin-top:10px; color:#555;">
+        Next update in: <span id="countdown"></span> seconds
+        &nbsp;|&nbsp;
+        Last Updated: <span id="updated"></span>
+    </div>
 
-<div style="width:400px;background:#eee;border-radius:10px">
-  <div id="bar" style="height:25px;width:0%;background:#2a9d8f;border-radius:10px"></div>
-</div>
+    <script>
+        const UPDATE_INTERVAL = 30;
+        let countdown = UPDATE_INTERVAL;
 
-<h2>Forecast</h2>
+        async function updateMetrics() {
+            const res = await fetch("/metrics");
+            const data = await res.json();
 
-Next Hour Forecast: <span id="forecast"></span><br>
+            document.getElementById("total").textContent = data.total;
+            document.getElementById("occupied").textContent = data.occupied;
+            document.getElementById("empty").textContent = data.empty;
+            document.getElementById("forecast").textContent = data.forecast;
+            document.getElementById("agent").textContent = data.agent;
 
-<h2>Agent</h2>
+            // Status
+            const occupancyRate = data.occupied / data.total;
+            let status = "", color = "";
+            if (occupancyRate < 0.5) { status="Plenty of Parking"; color="green"; }
+            else if (occupancyRate < 0.8) { status="Filling Up"; color="orange"; }
+            else { status="Nearly Full"; color="red"; }
+            const statusEl = document.getElementById("status");
+            statusEl.textContent = status;
+            statusEl.style.color = color;
 
-<!-- Agent Decision: <span id="agent"></span> -->
- <div id="agent" style="
-    background:#f4f4f4;
-    padding:15px;
-    border-radius:8px;
-    white-space:pre-line;
-"></div>
+            // Occupancy bar
+            const percent = Math.round(occupancyRate * 100);
+            document.getElementById("bar").style.width = percent + "%";
 
-<script>
+            // Timestamp
+            document.getElementById("updated").textContent = new Date().toLocaleTimeString();
 
-async function updateMetrics(){
+            // Reset countdown
+            countdown = UPDATE_INTERVAL;
+        }
 
-    const res = await fetch("/metrics")
-    const data = await res.json()
-    const occupancyRate = data.occupied / data.total
+        // Countdown timer
+        setInterval(() => {
+            countdown--;
+            if (countdown < 0) countdown = UPDATE_INTERVAL;
+            document.getElementById("countdown").textContent = countdown;
+        }, 1000);
 
-    document.getElementById("total").textContent = data.total
-    document.getElementById("occupied").textContent = data.occupied
-    document.getElementById("empty").textContent = data.empty
-    document.getElementById("forecast").textContent = data.forecast
-    document.getElementById("agent").textContent = data.agent
-    
-
-    let status = ""
-    let color = ""
-
-    if (occupancyRate < 0.5){
-        status = "Plenty of Parking"
-        color = "green"
-    }
-    else if (occupancyRate < 0.8){
-        status = "Filling Up"
-        color = "orange"
-    }
-    else{
-        status = "Nearly Full"
-        color = "red"
-    }
-
-    const statusEl = document.getElementById("status")
-    statusEl.textContent = status
-    statusEl.style.color = color
-
-    const percent = Math.round((data.occupied / data.total) * 100)
-
-    document.getElementById("bar").style.width = percent + "%"
-}
-
-setInterval(updateMetrics,10000)
-
-updateMetrics()
-
-</script>
-
+        // Update metrics every UPDATE_INTERVAL seconds
+        setInterval(updateMetrics, UPDATE_INTERVAL * 1000);
+        updateMetrics();
+    </script>
 </body>
 </html>
