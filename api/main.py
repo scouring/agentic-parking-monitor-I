@@ -14,13 +14,15 @@ from agent_service.agent_runner import run_agent
 app = FastAPI(title="Smart Parking Monitor")
 
 # Shared state
-latest_stats = {"total": 0, "occupied": 0, "empty": 0}
-latest_frame_jpg = None  # JPEG bytes
-UPDATE_INTERVAL = 30  # seconds
+latest_stats = {"total":0,"occupied":0,"empty":0}
+latest_frame_jpg = None
+last_update = 0
+UPDATE_INTERVAL = 15
 
 # Background updater: updates stats and frame every UPDATE_INTERVAL
 def background_updater():
-    global latest_stats, latest_frame_jpg
+    global latest_frame_jpg, latest_stats, last_update
+
     while True:
         frame_path = get_next_frame()
         result = run_inference(frame_path)
@@ -30,11 +32,13 @@ def background_updater():
             "occupied": result["occupied"],
             "empty": result["empty"]
         })
-        log_stats(latest_stats)
 
-        # Convert frame to JPEG once
         _, buffer = cv2.imencode(".jpg", result["image"])
         latest_frame_jpg = buffer.tobytes()
+
+        last_update = int(time.time())   # <- single sync point
+
+        log_stats(latest_stats)
 
         time.sleep(UPDATE_INTERVAL)
 
@@ -68,12 +72,14 @@ def video_feed():
 def metrics():
     forecast = forecast_next_hour()
     agent = run_agent(latest_stats, forecast)
+
     return {
         "total": latest_stats["total"],
         "occupied": latest_stats["occupied"],
         "empty": latest_stats["empty"],
         "forecast": forecast,
-        "agent": agent["message"]
+        "agent": agent["message"],
+        "last_update": last_update
     }
 
 # Serve frontend

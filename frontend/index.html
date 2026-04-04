@@ -32,7 +32,7 @@
 
     <!-- Video -->
     <div id="video-container">
-        <img src="/video">
+        <img id="video" src="/video" width="640">
     </div>
 
     <!-- Metrics -->
@@ -65,51 +65,71 @@
         Last Updated: <span id="updated"></span>
     </div>
 
-    <script>
-        const UPDATE_INTERVAL = 30;
-        let countdown = UPDATE_INTERVAL;
+<script>
 
-        async function updateMetrics() {
-            const res = await fetch("/metrics");
-            const data = await res.json();
+const UPDATE_INTERVAL = 15000
+let countdown = UPDATE_INTERVAL/1000
 
-            document.getElementById("total").textContent = data.total;
-            document.getElementById("occupied").textContent = data.occupied;
-            document.getElementById("empty").textContent = data.empty;
-            document.getElementById("forecast").textContent = data.forecast;
-            document.getElementById("agent").textContent = data.agent;
+async function updateAll(){
 
-            // Status
-            const occupancyRate = data.occupied / data.total;
-            let status = "", color = "";
-            if (occupancyRate < 0.5) { status="Plenty of Parking"; color="green"; }
-            else if (occupancyRate < 0.8) { status="Filling Up"; color="orange"; }
-            else { status="Nearly Full"; color="red"; }
-            const statusEl = document.getElementById("status");
-            statusEl.textContent = status;
-            statusEl.style.color = color;
+    const res = await fetch("/metrics")
+    const data = await res.json()
 
-            // Occupancy bar
-            const percent = Math.round(occupancyRate * 100);
-            document.getElementById("bar").style.width = percent + "%";
+    document.getElementById("total").textContent = data.total
+    document.getElementById("occupied").textContent = data.occupied
+    document.getElementById("empty").textContent = data.empty
+    document.getElementById("forecast").textContent = data.forecast
+    document.getElementById("agent").textContent = data.agent
 
-            // Timestamp
-            document.getElementById("updated").textContent = new Date().toLocaleTimeString();
+    // Status
+    const occupancyRate = data.occupied / data.total
+    let status="", color=""
 
-            // Reset countdown
-            countdown = UPDATE_INTERVAL;
-        }
+    if (occupancyRate < 0.5){
+        status="Plenty of Parking"
+        color="green"
+    }
+    else if (occupancyRate < 0.8){
+        status="Filling Up"
+        color="orange"
+    }
+    else{
+        status="Nearly Full"
+        color="red"
+    }
 
-        // Countdown timer
-        setInterval(() => {
-            countdown--;
-            if (countdown < 0) countdown = UPDATE_INTERVAL;
-            document.getElementById("countdown").textContent = countdown;
-        }, 1000);
+    const statusEl = document.getElementById("status")
+    statusEl.textContent = status
+    statusEl.style.color = color
 
-        // Update metrics every UPDATE_INTERVAL seconds
-        setInterval(updateMetrics, UPDATE_INTERVAL * 1000);
-        updateMetrics();
-    </script>
+    // Occupancy bar
+    const percent = Math.round(occupancyRate * 100)
+    document.getElementById("bar").style.width = percent + "%"
+
+    // Timestamp
+    document.getElementById("updated").textContent =
+        new Date().toLocaleTimeString()
+
+    // reload image at same moment
+    document.getElementById("video").src = "/video?t=" + Date.now()
+
+    countdown = UPDATE_INTERVAL/1000
+}
+
+async function startDashboard(){
+    await updateAll()
+    setInterval(updateAll, UPDATE_INTERVAL)
+}
+
+startDashboard()
+
+// countdown timer
+setInterval(()=>{
+    countdown--
+    if(countdown < 0) countdown = UPDATE_INTERVAL/1000
+    document.getElementById("countdown").textContent = countdown
+},1000)
+
+</script>
 </body>
 </html>

@@ -6,14 +6,64 @@ An end-to-end AI-powered system that transforms parking lot images into real-tim
 
 ### 📌 Overview
 
-This project simulates a production-grade intelligent parking management system. It combines:
+Smart Parking Monitor is an AI-powered parking analytics system that performs real-time parking lot monitoring using computer vision and a lightweight agent decision layer.
 
-- Computer Vision (YOLO) for vehicle detection  
-- Time-series tracking and forecasting  
-- Rule-based + LLM-powered decision engine  
-- Interactive dashboard (Streamlit)  
+The application analyzes parking lot images using a YOLO-based object detection pipeline to determine occupancy metrics such as:
 
-The system converts raw visual data into actionable insights such as pricing adjustments, traffic redirection, and operational alerts.
+- Total parking spaces
+- Occupied spaces
+- Available spaces
+
+These metrics are combined with a simple forecasting model and an agent reasoning layer that generates operational recommendations for parking management.
+
+The system exposes these results through a FastAPI backend, a real-time web dashboard, and a REST API that can be integrated into other systems.
+
+The entire application is containerized using *Docker*, enabling easy deployment on any machine with Docker installed.
+
+---
+
+### 📋 Key Features
+
+#### 👁️ Computer Vision Parking Detection
+
+Uses a YOLO inference pipeline to detect vehicles and compute parking occupancy statistics.
+
+#### ⚙️ Real-Time Dashboard
+
+A browser-based dashboard displays:
+- Live parking lot video frames
+- Occupancy statistics
+- Parking utilization visualization
+- Forecast predictions
+- AI-generated operational recommendations
+
+#### 🧠 Agent Decision Layer
+
+An AI-driven decision module analyzes parking metrics and forecasts to generate insights such as:
+- Pricing recommendations
+- Traffic management guidance
+- Parking capacity alerts
+
+#### ⚡REST API
+
+The system exposes API endpoints for retrieving real-time parking metrics and video frames.
+
+#### 🫙 Containerized Deployment
+
+The entire application runs in a Docker container, ensuring consistent execution across development and production environments.
+
+---
+
+### 🏢 Example Use Cases
+
+1. 🛜 Smart Cities
+    - monitor municipal parking availability.
+
+2. 🏪 Retail Analytics
+    - Optimize parking utilization for shopping centers.
+
+3. 📱 Urban Mobility Research
+    - Analyze parking demand trends and traffic flow.
 
 ---
 
@@ -28,23 +78,25 @@ This system is designed to deliver measurable impact:
 
 ---
 
-### 🏗️ Architecture
+### 🏗️ System Architecture
 
-```text
-Image Feed (Simulated)
-        ↓
-Vision Service (YOLO Detection)
-        ↓
-Occupancy Counter
-        ↓
-Data Logger (Time Series)
-        ↓
-Forecasting Model (Next-hour prediction)
-        ↓
-Agent (Decision Engine + LLM Explanation)
-        ↓
-Streamlit Dashboard
-```
+<p align="center">
+    <img src="static/images/Smart parking monitor system architecture.png" width="500" />
+</p>
+
+---
+
+### Technology Stack
+
+| Component         | Technology        |
+|:-----------------:|:-----------------:|
+| Backend API       | FastAPI           |
+| Computer Vision   | YOLO              |
+| Image Processing  | OpenCV            |
+| Agent Reasoning   | OpenAI            |
+| Frontend          | HTML + JavaScript |
+| Containerization  | Docker            |
+| Language          | Python            |
 
 ---
 
@@ -55,41 +107,9 @@ Streamlit Dashboard
 
 ---
 
-### ⚙️ Features
-
-- 🔍 **Computer Vision**
-  - YOLO-based vehicle detection
-  - Handles dense scenes and small objects
-
-- 📊 **Real-Time Dashboard**
-  - Live feed simulation from image stock
-  - Occupancy metrics (total, occupied, available)
-  - Occupancy rate visualization
-
-- 📈 **Time-Series Tracking**
-  - Persistent logging of occupancy data
-  - Trend visualization over time
-
-- 🔮 **Forecasting**
-  - Linear regression-based next-hour occupancy prediction
-  - Enables proactive decision-making
-
-- 🤖 **Agent-Based Decision System**
-  - Structured decisions:
-    - Pricing adjustments
-    - Traffic redirection
-    - Alerts
-  - LLM-generated explanations for business users
-
-- 🚨 **Alerts**
-  - High occupancy warnings
-  - Forecast-based demand alerts
-
----
-
 ### 📸 **Video Demo**
 <p align="center">
-    <img src="static/video/Recording%202026-03-20%20150310.gif" width="500" />
+    <img src="static/video/Recording2026-04-04155735-ezgif.com-video-to-gif-converter.gif" width="500" />
 </p>
 
 ---
@@ -106,12 +126,12 @@ Streamlit Dashboard
 
 ---
 
-### Installation
+### Installation - for running locally
 
 ### 1. Clone the repository
 
 ```bash
-git clone -b version-2 https://github.com/scouring/agentic-parking-monitor-I.git
+git clone -b feature/version-3 https://github.com/scouring/agentic-parking-monitor-I.git
 cd agentic-parking-monitor-I
 ```
 
@@ -133,26 +153,60 @@ pip install -r requirements.txt
 ### 4. Run locally
 ```bash
 
-streamlit run app/app.py
+uvicorn api.main:app --reload
 ```
 
 ### 5. Open a webpage for the UI
 ```bash
-http://localhost:8501
+http://localhost:8000
 ```
-Select the button "Start Live Feed Simulation"
+
+---
+
+### Running with Docker
+
+### 1. Build the image
+```bash
+docker build -t smart-parking-monitor .
+```
+
+### 2. Run the container (input your OpenAI API key)
+```bash
+docker run -p 8000:8000 \
+ -e OPENAI_API_KEY = your_key_here \
+  smart-parking-monitor
+```
+
+### 3. Open:
+```bash
+http://localhost:8000
+```
 
 ---
 
 ### Project Structure
 ```text
 agentic-parking-monitor/
-├── app/
-├── vision_service/
+│
+├── api/
+│   └── main.py
+│
+├── services/
+│   ├── frame_service.py
+│   ├── yolo_service.py
+│   ├── logging_service.py
+│   └── forecast_service.py
+│
 ├── agent_service/
-├── models/
-├── dataset/
+│   ├── agent_runner.py
+|   ├── decision_engine.py
+│   └── tools.py
+│
+├── frontend/
+│   └── index.html
+│
 ├── requirements.txt
+├── Dockerfile
 └── README.md
 ```
 
@@ -168,6 +222,6 @@ This project is licensed under the [MIT License](LICENSE)
 - Real-time camera integration
 - Multi-lot optimization
 - Advanced forecasting (ARIMA, LSTM)
-- API integration for pricing systems
 - Notification system (Slack/SMS)
+- edge-device inference
 
